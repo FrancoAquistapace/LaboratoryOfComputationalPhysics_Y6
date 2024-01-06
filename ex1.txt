@@ -1,0 +1,36 @@
+mkdir students
+if ! test -f LCP_22-23_students.csv; then
+    wget https://www.dropbox.com/s/867rtx3az6e9gm8/LCP_22-23_students.csv
+fi
+if ! test -f ./students/LCP_22-23_students.csv; then
+    cp LCP_22-23_students.csv ./students/
+fi
+cd students
+grep "PoD" LCP_22-23_students.csv > PoD_students.csv
+grep "Physics" LCP_22-23_students.csv > Physics_students.csv
+cut -d',' -f1,1 LCP_22-23_students.csv > temp.txt
+tail -n +2 temp.txt > Family_names.txt
+rm temp.txt
+echo "Number of family names per starting letter:"
+POP_LETTER=A
+POP_NUMBER=$(grep -c ^A Family_names.txt)
+NEW_NUMBER=0
+for i in A B C D E F G H J I K L M N O P Q R S T U V W X Y Z;
+    do NEW_NUMBER=$(grep -c ^$i Family_names.txt);
+    echo $i $NEW_NUMBER;
+    if [ $NEW_NUMBER -gt $POP_NUMBER ]; then 
+	POP_NUMBER=$NEW_NUMBER
+	POP_LETTER=$i
+    fi
+done 
+echo "Most popular letter:" $POP_LETTER
+rm Family_names.txt
+for (( i=0; i<=17; i++));
+    do touch students_"$i"_mod_18.txt;
+done 
+NUM_STUDENTS=$(wc -l < LCP_22-23_students.csv)
+for (( c=2; c<=$NUM_STUDENTS; c++ ));
+    do line=$(sed -n "${c}p" "LCP_22-23_students.csv");
+    echo $line >> students_"$((($c - 1) % 18))"_mod_18.txt;
+done
+echo "Process completed."
